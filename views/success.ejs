@@ -1,0 +1,17 @@
+<%- include("header") %>
+<div class="full-box">
+  <div class="center">
+    <h4><%= title %></h4>
+    <p><%= subtitle %></p>
+    <% if(subtitle==="go and login"){ %>
+    <button
+      type="button"
+      class="btn btn-primary"
+      onclick="window.location.href = '/login';"
+    >
+      go to login page
+    </button>
+    <% } %>
+  </div>
+</div>
+<%- include("footer") %>
