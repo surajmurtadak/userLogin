@@ -1,3 +1,4 @@
+require("dotenv").config();
 const ejs = require("ejs");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -17,8 +18,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-const secret = "thisisencryptionkey";
-userSchema.plugin(encrypt, { secret: secret });
+userSchema.plugin(encrypt, {
+  secret: process.env.SECRET,
+  encryptedFields: ["password"],
+});
 
 const user = mongoose.model("usercol", userSchema);
 
@@ -40,7 +43,7 @@ app.post("/registration", (req, res) => {
 
   //...........find Condition......projection............function
 
-  user.findOne({ email: uemail }, { _id: 0, password: 0 }, (err, db) => {
+  user.findOne({ email: uemail }, (err, db) => {
     // execute below if no error
     if (err) {
       //if error found
