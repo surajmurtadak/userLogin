@@ -11,7 +11,7 @@ app.use(express.static(__dirname + "/views"));
 app.set("view engine", "ejs");
 mongoose.set("strictQuery", true);
 
-mongoose.connect("mongodb://localhost:27017/userdb");
+mongoose.connect("mongodb://127.0.0.1:27017/userdb");
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true },
