@@ -1,10 +1,11 @@
-require("dotenv").config();
+// require("dotenv").config();
 const ejs = require("ejs");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
-const encrypt = require("mongoose-encryption");
+// const encrypt = require("mongoose-encryption");
+const md5 = require("md5");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/views"));
@@ -18,10 +19,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-userSchema.plugin(encrypt, {
-  secret: process.env.SECRET,
-  encryptedFields: ["password"],
-});
+// userSchema.plugin(encrypt, {
+//   secret: process.env.SECRET,
+//   encryptedFields: ["password"],
+// });
 
 const user = mongoose.model("usercol", userSchema);
 
@@ -39,7 +40,7 @@ app.get("/registration", (req, res) => {
 
 app.post("/registration", (req, res) => {
   const uemail = req.body.email;
-  const upassword = req.body.password;
+  const upassword = md5(req.body.password);
 
   //...........find Condition......projection............function
 
@@ -79,13 +80,13 @@ app.post("/login", (req, res) => {
     if (err) {
       res.send(err);
     } else if (db !== null) {
-      if (db.password === upassword) {
+      if ( db.password === md5(upassword)) {
         res.render("secret", {
           title: "welcome to Secret page",
           username: "Email:  " + uemail,
           pass: "Password:  " + upassword,
         });
-      } else if (db.password !== upassword) {
+      } else if (db.password !== md5(upassword)) {
         res.render("secret", {
           title: "Incorrect password",
           username: "",
