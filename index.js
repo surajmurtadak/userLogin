@@ -5,7 +5,9 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 // const encrypt = require("mongoose-encryption");
-const md5 = require("md5");
+// const md5 = require("md5");
+const bcrypt = require("bcrypt");
+const hashRound = 10;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/views"));
@@ -40,7 +42,7 @@ app.get("/registration", (req, res) => {
 
 app.post("/registration", (req, res) => {
   const uemail = req.body.email;
-  const upassword = md5(req.body.password);
+  const upassword = req.body.password;
 
   //...........find Condition......projection............function
 
@@ -57,18 +59,22 @@ app.post("/registration", (req, res) => {
       });
     } else {
       //if data not found
-      const newUser = new user({
-        email: uemail,
-        password: upassword,
-      });
-      newUser.save((err) => {
-        if (!err) {
-          res.render("success", {
-            title: "Successfully registered",
-            subtitle: "go and login",
-          });
-        }
-      });
+      bcrypt.hash(upassword,hashRound,(err,hash)=>{
+
+        const newUser = new user({
+          email: uemail,
+          password: hash,
+        });
+        newUser.save((err) => {
+          if (!err) {
+            res.render("success", {
+              title: "Successfully registered",
+              subtitle: "go and login",
+            });
+          }
+        });
+      })
+      
     }
   });
 });
@@ -80,19 +86,43 @@ app.post("/login", (req, res) => {
     if (err) {
       res.send(err);
     } else if (db !== null) {
-      if ( db.password === md5(upassword)) {
-        res.render("secret", {
+
+      bcrypt.compare(upassword,db.password,(err,result)=>{
+
+        if(result===true){
+
+          res.render("secret", {
           title: "welcome to Secret page",
           username: "Email:  " + uemail,
           pass: "Password:  " + upassword,
         });
-      } else if (db.password !== md5(upassword)) {
-        res.render("secret", {
+
+        }
+        else if(result===false){
+
+          res.render("secret", {
           title: "Incorrect password",
           username: "",
           pass: "",
         });
-      }
+
+        }
+
+      });
+      
+      // if ( db.password === md5(upassword)) {
+      //   res.render("secret", {
+      //     title: "welcome to Secret page",
+      //     username: "Email:  " + uemail,
+      //     pass: "Password:  " + upassword,
+      //   });
+      // } else if (db.password !== md5(upassword)) {
+      //   res.render("secret", {
+      //     title: "Incorrect password",
+      //     username: "",
+      //     pass: "",
+      //   });
+      // }
     } else {
       res.render("secret", {
         title: "Invalid Credential",
